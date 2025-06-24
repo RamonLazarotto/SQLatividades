@@ -1,0 +1,64 @@
+CREATE DATABASE Clinica;
+--
+-- Selecionar o banco de dados para uso
+USE Clinica;
+
+-- Tabela Ambulatorios
+CREATE TABLE ambulatorios (
+    nroa INT PRIMARY KEY,
+    andar NUMERIC(3) NOT NULL,
+    capacidade SMALLINT
+);
+
+-- Tabela Medicos
+CREATE TABLE medicos (
+    codm INT PRIMARY KEY,
+    nome VARCHAR(40) NOT NULL,
+    idade SMALLINT NOT NULL,
+    especialidade CHAR(20),
+    CPF NUMERIC(11) UNIQUE,
+    cidade VARCHAR(30),
+    nroa INT NOT NULL,
+    FOREIGN KEY (nroa) REFERENCES ambulatorios(nroa)
+);
+
+-- Tabela Pacientes
+CREATE TABLE pacientes (
+    codp INT PRIMARY KEY,
+    nome VARCHAR(40) NOT NULL,
+    idade SMALLINT NOT NULL,
+    city CHAR(30),
+    CPF NUMERIC(11) UNIQUE,
+    doenca VARCHAR(40) NOT NULL
+);
+
+-- Tabela Funcionarios
+CREATE TABLE funcionarios (
+    codf INT PRIMARY KEY,
+    nome VARCHAR(40) NOT NULL,
+    idade SMALLINT,
+    CPF NUMERIC(11) UNIQUE,
+    cidade VARCHAR(30),
+    salario NUMERIC(10),
+    cargo VARCHAR(20)
+);
+
+-- Tabela Consultas (chave composta)
+CREATE TABLE consultas (
+    codm INT,
+    codp INT,
+    data DATE,
+    hora TIME,
+    PRIMARY KEY (codm, codp, data, hora),
+    FOREIGN KEY (codm) REFERENCES medicos(codm),
+    FOREIGN KEY (codp) REFERENCES pacientes(codp)
+);
+--
+ALTER TABLE funcionarios ADD nroa INT;
+--
+ALTER TABLE funcionarios DROP COLUMN cargo;
+ALTER TABLE funcionarios DROP COLUMN nroa;
+
+--
+ALTER TABLE pacientes RENAME COLUMN city TO cidade;
+--
