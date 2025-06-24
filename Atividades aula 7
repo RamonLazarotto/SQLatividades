@@ -1,0 +1,212 @@
+--1 - Buscar o nome dos médicos que têm consulta marcada e as datas das suas consultas
+
+SELECT DISTINCT m.nome AS nome_medico
+                                 , c.data_consulta
+    FROM medico m
+       JOIN consulta c 
+          ON m.idmedico = c.idmedico;
+
+--2 - Buscar o número e a capacidade dos ambulatórios do quinto andar e o nome dos médicos ortopedistas que atendem neles
+
+    SELECT a.numero
+                  , a.capacidade
+                  , m.nome AS nome_medico
+       FROM ambulatorio a
+          JOIN medico m 
+             ON a.numero = m.nro_ambulatorio
+    WHERE a.andar = 5 
+          AND m.especialidade = 'Ortopedista';
+
+--3 - Buscar, para as consultas marcadas para o período da manhã (7h-12h), o nome do médico, o nome do paciente e a data da consulta
+
+   SELECT m.nome AS nome_medico
+                 , p.nome AS nome_paciente
+                 , c.data_consulta
+      FROM consulta c
+         JOIN medico m 
+            ON c. idmedico = m. idmedico
+         JOIN paciente p 
+            ON c.cpf_paciente = p.cpf
+   WHERE c.hora_consulta BETWEEN '07:00' AND '12:00';
+
+--4 - Buscar o nome e o salário dos funcionários de Florianópolis e Palhoça. Estes funcionários devem estar internados como pacientes e possuir consultas marcadas com psiquiatras
+
+   SELECT f.nome
+                , f.salario
+      FROM funcionario f
+         JOIN paciente p 
+            ON f.cpf = p.cpf
+         JOIN consulta c 
+            ON p.cpf = c.cpf_paciente
+         JOIN medico m 
+            ON c. idmedico = m. idmedico
+    WHERE f.cidade IN ('Florianópolis', 'Palhoça') 
+         AND m.especialidade = 'Psiquiatra';
+
+--5 - Buscar o número dos ambulatórios com capacidade superior à capacidade do ambulatório de número 100
+
+   SELECT a.numero
+      FROM ambulatorio a
+   WHERE a.capacidade > ( SELECT capacidade
+    	                                     FROM ambulatorio
+                                              WHERE numero = 100
+                                           );
+
+--6 - Buscar o nome e o CPF dos funcionários que recebem salários iguais ou inferiores ao salário do funcionário com CPF 1001
+
+   SELECT nome
+                , cpf
+      FROM funcionario
+   WHERE salario <= ( SELECT salario
+                                         FROM funcionario
+                                      WHERE cpf = 1001
+                                    );
+--7 - Buscar pares de nomes de médicos diferentes que têm consultas marcadas nas mesmas datas
+
+   SELECT DISTINCT m.nome AS medico1
+                                    , m2.nome AS medico2
+                                    , c.data_consulta
+FROM consulta c
+JOIN medico m
+   ON c. idmedico = m. idmedico
+JOIN consulta c2 
+   ON c.data_consulta = c2.data_consulta 
+AND c. idmedico <> c2. idmedico
+JOIN medico m2 
+   ON c2.crm_medico = m2.crm;
+
+--Usando União, Diferença e Intersecção-
+ --1 - Buscar o nome e CPF dos médicos e dos pacientes cadastrados no hospital
+   SELECT nome, cpf 
+      FROM medico
+    UNION
+   SELECT nome
+                , cpf 
+     FROM paciente;
+
+--2 - Buscar o nome, CPF e idade dos médicos, pacientes e funcionários que residem em Florianópolis
+   SELECT nome, cpf, idade 
+      FROM medico 
+    WHERE cidade = 'Florianópolis'
+     UNION
+    SELECT nome, cpf, idade 
+       FROM paciente 
+     WHERE cidade = 'Florianópolis'
+      UNION
+    SELECT nome, cpf, idade 
+       FROM funcionario 
+    WHERE cidade = 'Florianópolis';
+
+--3 - Buscar o nome e CPF dos funcionários que recebem salários abaixo de R$ 500,00 e não estão internados como pacientes
+   SELECT nome, cpf
+      FROM funcionario
+   WHERE salario < 500
+         AND cpf NOT IN (SELECT cpf 
+                                            FROM paciente);
+
+--4 - Buscar o número dos ambulatórios onde nenhum médico dá atendimento
+   SELECT numero
+      FROM ambulatorio
+    WHERE numero NOT IN (SELECT DISTINCT nro_ambulatorio
+ 		                            FROM medico);
+
+--5 - Buscar o nome e CPF dos funcionários de Florianópolis que estão internados como pacientes
+   SELECT f.nome, f.cpf
+      FROM funcionario f
+INTERSECT
+   SELECT p.nome, p.cpf
+      FROM paciente p
+   WHERE p.cidade = 'Florianópolis';
+
+
+
+
+--6 - Buscar o nome e CPF dos médicos pediatras que não atendem nos laboratórios 101 e 102, e estão internados como pacientes sofrendo de gastrite
+   SELECT m.nome, m.cpf
+      FROM medico m
+         JOIN paciente p 
+            ON m.cpf = p.cpf
+    WHERE m.especialidade = 'Pediatra'
+          AND m. nro_ambulatorio NOT IN (101, 102)
+          AND p.doenca = 'Gastrite';
+
+
+--Usando Join
+
+--1 - Buscar o número e a capacidade dos ambulatórios do quinto andar e o nome dos médicos que atendem neles
+   SELECT a.numero, a.capacidade, m.nome
+      FROM ambulatorio a
+         JOIN medico m 
+           ON a.numero = m. nro_ambulatorio 
+  WHERE a.andar = 5;
+
+--2 - Buscar o nome e o salário dos funcionários de Florianópolis e Palhoça que estão internados como pacientes e têm consultas marcadas no dia 20/08/2016
+   SELECT f.nome, f.salario
+      FROM funcionario f
+         JOIN paciente p 
+            ON f.cpf = p.cpf
+         JOIN consulta c 
+            ON p.codigo = c.cod_paciente
+    WHERE (f.cidade = 'Florianópolis' OR f.cidade = 'Palhoça')
+          AND c.data = '2016-08-20';
+
+--3 - Buscar o número e o andar dos ambulatórios onde nenhum médico dá atendimento
+
+  SELECT a.numero, a.andar
+     FROM ambulatorio a
+  LEFT JOIN medico m
+  ON a.numero = m.nro_ambulatorio
+  WHERE m.idmedico is null;
+
+--4 - Buscar o número dos ambulatórios que estão no mesmo andar do ambulatório 101 e possuem capacidade superior à capacidade dele
+   SELECT a.numero
+      FROM ambulatorio a
+        JOIN ambulatorio a2 
+           ON a.andar = a2.andar
+   WHERE a2.numero = 101
+        AND a.capacidade > a2.capacidade;
+
+
+--5 - Buscar o código dos pacientes que têm consultas marcadas com todos os médicos
+  SELECT c.cod_paciente
+     FROM consulta c
+   GROUP BY c.cod_paciente
+HAVING COUNT(DISTINCT c. idmedico) = (SELECT COUNT(*) 
+                                                                                FROM medico);
+
+--6 - Buscar o nome e o CPF dos médicos que têm consultas marcadas com todos os pacientes
+  SELECT m.nome, m.cpf
+      FROM medico m
+        JOIN consulta c 
+           ON m.crm = c. idmedico
+GROUP BY m. idmedico, m.nome, m.cpf
+HAVING COUNT(DISTINCT c.cod_paciente) = (SELECT COUNT(*) 
+                                                                                     FROM paciente);
+
+--7 - Buscar o nome e o CPF dos pacientes que têm consultas marcadas com todos os médicos ortopedistas que atendem nos ambulatórios do primeiro andar
+   SELECT p.nome, p.cpf
+FROM Paciente p
+JOIN Consulta c ON p.codigo = c.cod_paciente
+WHERE c.crm_medico IN (
+  SELECT m.crm
+  FROM Medico m
+  JOIN Ambulatorio a ON m.num_ambulatorio = a.numero
+  WHERE m.especialidade = 'Ortopedia' AND a.andar = 1
+)
+GROUP BY p.codigo, p.nome, p.cpf
+HAVING COUNT(DISTINCT c. idmedico) = (
+  SELECT COUNT(DISTINCT m. idmedico)
+  FROM medico m
+  JOIN ambulatorio a ON m.nro_ambulatorio = a.numero
+  WHERE m.especialidade = 'Ortopedia' AND a.andar = 1
+);
+
+--8 - Todos os médicos ortopedistas dão atendimento no mesmo ambulatório? Se sim, buscar o número e o andar deste ambulatório
+   SELECT a.numero, a.andar
+FROM medico m
+JOIN ambulatorio a ON m.nro_ambulatorio = a.numero
+WHERE m.especialidade = 'Ortopedia'
+GROUP BY a.numero, a.andar
+HAVING COUNT(DISTINCT m. idmedico) = (
+  SELECT COUNT(*) FROM Medico WHERE especialidade = 'Ortopedia'
+);
