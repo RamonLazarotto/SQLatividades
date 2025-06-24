@@ -1,0 +1,80 @@
+-- Criação das tabelas
+
+CREATE TABLE ambulatorio (
+    numero INT PRIMARY KEY,
+    andar INT,
+    capacidade INT
+);
+
+CREATE TABLE medico (
+    idmedico INT PRIMARY KEY,
+    nome VARCHAR(100),
+    cpf VARCHAR(11),
+    especialidade VARCHAR(50),
+    nro_ambulatorio INT,
+    FOREIGN KEY (nro_ambulatorio) REFERENCES ambulatorio(numero)
+);
+
+CREATE TABLE paciente (
+    codigo INT PRIMARY KEY,
+    nome VARCHAR(100),
+    cpf VARCHAR(11),
+    cidade VARCHAR(100)
+);
+
+CREATE TABLE consulta (
+    idconsulta INT PRIMARY KEY,
+    cod_paciente INT,
+    idmedico INT,
+    data DATE,
+    FOREIGN KEY (cod_paciente) REFERENCES paciente(codigo),
+    FOREIGN KEY (idmedico) REFERENCES medico(idmedico)
+);
+
+CREATE TABLE funcionario (
+    cpf VARCHAR(11) PRIMARY KEY,
+    nome VARCHAR(100),
+    cidade VARCHAR(100),
+    salario DECIMAL(10,2)
+);
+
+-- Inserts de ambulatórios
+
+INSERT INTO ambulatorio (numero, andar, capacidade) VALUES
+(101, 1, 10),
+(102, 1, 20),
+(201, 2, 15),
+(301, 3, 10),
+(501, 5, 12),
+(502, 5, 20);
+
+-- Inserts de médicos
+
+INSERT INTO medico (idmedico, nome, cpf, especialidade, nro_ambulatorio) VALUES
+(1, 'dr. ana', '11111111111', 'ortopedia', 101),
+(2, 'dr. bruno', '22222222222', 'ortopedia', 101),
+(3, 'dr. carla', '33333333333', 'cardiologia', 501),
+(4, 'dr. daniel', '44444444444', 'pediatria', 502);
+
+-- Inserts de pacientes
+
+INSERT INTO paciente (codigo, nome, cpf, cidade) VALUES
+(1, 'joão', '99999999999', 'florianópolis'),
+(2, 'maria', '88888888888', 'palhoça'),
+(3, 'lucas', '77777777777', 'são josé');
+
+-- Inserts de funcionários
+
+INSERT INTO funcionario (cpf, nome, cidade, salario) VALUES
+('99999999999', 'joão', 'florianópolis', 1500.00),
+('88888888888', 'maria', 'palhoça', 1800.00),
+('12312312312', 'ana clara', 'florianópolis', 300.00);
+
+-- Inserts de consultas
+
+INSERT INTO consulta (idconsulta, cod_paciente, idmedico, data) VALUES
+(1, 1, 1, '2016-08-20'),
+(2, 1, 2, '2016-08-20'),
+(3, 2, 1, '2016-08-20'),
+(4, 2, 2, '2016-08-20'),
+(5, 3, 1, '2016-08-21');
